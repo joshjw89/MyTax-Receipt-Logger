@@ -26,6 +26,18 @@ const RM = (n) => 'RM ' + Number(n || 0).toLocaleString('en-MY', { minimumFracti
 const dbGet = (key, fallback) => JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
 const dbSet = (key, value) => localStorage.setItem(key, JSON.stringify(value));
 const nowStamp = () => new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+// Build version: YYYY.MMDD.HHMMSS — generated once at load time
+const BUILD_VERSION = (() => {
+  const d = new Date();
+  const YYYY   = d.getFullYear();
+  const MM     = String(d.getMonth() + 1).padStart(2, '0');
+  const DD     = String(d.getDate()).padStart(2, '0');
+  const HH     = String(d.getHours()).padStart(2, '0');
+  const mm     = String(d.getMinutes()).padStart(2, '0');
+  const SS     = String(d.getSeconds()).padStart(2, '0');
+  return `${YYYY}.${MM}${DD}.${HH}${mm}${SS}`;
+})();
 const makeToken = (u) => btoa(unescape(encodeURIComponent(JSON.stringify(u))));
 const readToken = (t) => JSON.parse(decodeURIComponent(escape(atob(t))));
 
@@ -615,6 +627,19 @@ function LifecyclePage({ token, notify }) {
   );
 }
 
+// ---------- App footer ----------
+function AppFooter({ sidebar = false }) {
+  return (
+    <div className={sidebar
+      ? 'px-5 py-3 border-t border-white/10 text-center'
+      : 'mt-8 pt-4 border-t border-slate-200 text-center'}>
+      <p className={`text-xs font-mono ${sidebar ? 'text-white/30' : 'text-slate-400'}`}>
+        v{BUILD_VERSION}
+      </p>
+    </div>
+  );
+}
+
 // ---------- App shell ----------
 const NAV = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -669,6 +694,7 @@ function App() {
           <p className="text-sm font-medium">{user.name}</p>
           <button onClick={logout} className="text-xs opacity-60 hover:opacity-100 mt-1">Log out</button>
         </div>
+        <AppFooter sidebar={true} />
       </aside>
       <main className="flex-1 px-6 py-8 max-w-5xl mx-auto w-full">
         <div className="md:hidden flex gap-2 mb-6 overflow-x-auto">
@@ -683,6 +709,7 @@ function App() {
         {page === 'receipts' && <ReceiptsPage token={token} notify={notify} />}
         {page === 'summary' && <SummaryPage token={token} user={user} />}
         {page === 'lifecycle' && <LifecyclePage token={token} notify={notify} />}
+        <AppFooter />
       </main>
       <Toast toast={toast} />
     </div>
