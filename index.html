@@ -29,6 +29,28 @@
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel" src="app.js"></script>
+  <!--
+    Loaded manually (instead of <script type="text/babel" src="app.js">) so we can
+    force Babel's "classic" JSX runtime. Newer Babel versions default to an
+    "automatic" runtime that injects an ES module import statement, which plain
+    browser scripts cannot execute and causes a blank page with a console error:
+    "Cannot use import statement outside a module".
+  -->
+  <script>
+    fetch('app.js')
+      .then((r) => r.text())
+      .then((source) => {
+        const { code } = Babel.transform(source, {
+          presets: [['react', { runtime: 'classic' }]]
+        });
+        const script = document.createElement('script');
+        script.text = code;
+        document.body.appendChild(script);
+      })
+      .catch((err) => {
+        document.getElementById('root').innerHTML =
+          '<p style="padding:2rem;font-family:sans-serif;color:#b91c1c">Failed to load app.js: ' + err.message + '</p>';
+      });
+  </script>
 </body>
 </html>
